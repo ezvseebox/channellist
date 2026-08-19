@@ -1,0 +1,8 @@
+{
+  "name": "EZ vSeeBox Channel List",
+  "short_name": "Channel List",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0a0010",
+  "theme_color": "#9933ff"
+}
