@@ -1,4 +1,4 @@
-const CACHE = 'vsb-channel-list-v1';
+const CACHE = 'vsb-channel-list-v2';
 const FILES = ['./'];
 
 self.addEventListener('install', e => {
@@ -6,15 +6,22 @@ self.addEventListener('install', e => {
   self.skipWaiting();
 });
 
-self.addEventListener('activate', e => { self.clients.claim(); });
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    )
+  );
+  self.clients.claim();
+});
 
+// Network-first: always try network, fall back to cache only if offline
 self.addEventListener('fetch', e => {
   e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request).then(res => {
-      return caches.open(CACHE).then(c => {
-        c.put(e.request, res.clone());
-        return res;
-      });
-    }))
+    fetch(e.request).then(res => {
+      const clone = res.clone();
+      caches.open(CACHE).then(c => c.put(e.request, clone));
+      return res;
+    }).catch(() => caches.match(e.request))
   );
 });
